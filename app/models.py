@@ -32,11 +32,32 @@ class Attempt(db.Model):
         "AttemptAnswer", backref="attempt", lazy=True)
 
     @property
-    def correct_percentage(self):
-        if not self.attempt_answers:
-            return 0.0
+    def questions(self):
+        """Return the parsed list of question IDs from question_order."""
+        try:
+            return json.loads(self.question_order)
+        except (ValueError, TypeError):
+            return []
+
+    def get_remaining_question_ids(self):
+        """Return the list of question IDs that have not yet been answered."""
+        answered_q_ids = {aa.question_id for aa in self.attempt_answers}
+        return [qid for qid in self.questions if qid not in answered_q_ids]
+
+    def calculate_scores(self):
+        """Calculate the number of correct and incorrect answers."""
         correct_count = sum(1 for aa in self.attempt_answers if aa.is_correct)
-        return (correct_count / len(self.attempt_answers)) * 100
+        incorrect_count = len(self.attempt_answers) - correct_count
+        return correct_count, incorrect_count
+
+    @property
+    def correct_percentage(self):
+        """Return the percentage of correct answers (if any answers exist)."""
+        total = len(self.attempt_answers)
+        if total == 0:
+            return 0
+        correct_count, _ = self.calculate_scores()
+        return (correct_count / total) * 100
 
 
 class AttemptAnswer(db.Model):

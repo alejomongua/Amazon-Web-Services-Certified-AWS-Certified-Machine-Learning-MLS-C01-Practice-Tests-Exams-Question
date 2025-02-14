@@ -1,5 +1,4 @@
 import random
-import datetime
 import json
 import markdown
 
@@ -12,106 +11,54 @@ from flask import (
     url_for,
 )
 from markupsafe import Markup
+
 from app import db
 from app.models import Question, Attempt, AttemptAnswer
 from app.services.explanation_service import generate_explanation
+from app.services.question_service import get_question_and_answers
+from app.services.attempt_service import get_or_create_attempt, update_attempt_end_time
 
 main = Blueprint('main', __name__)
 
 
-def get_question_and_answers(qid):
-    """
-    Helper function to retrieve the question and corresponding attempt answer.
-    Returns a tuple with:
-        - question object
-        - selected answers (list of texts)
-        - correct answers (list of texts)
-        - attempt_answer object
-        - attempt_id
-    """
-    attempt_id = session.get("attempt_id")
-    if not attempt_id:
-        return None, None, None, None, attempt_id  # Return early if no attempt
-
-    q = Question.query.get(qid)
-    if not q:
-        return None, None, None, None, attempt_id  # Return early if question not found
-
-    attempt_answer = AttemptAnswer.query.filter_by(
-        attempt_id=attempt_id, question_id=q.id).first()
-    if not attempt_answer:
-        return None, None, None, None, attempt_id  # Return early if no attempt answer
-
-    # Get selected answer texts and correct answer texts
-    try:
-        selected_ids = set(json.loads(attempt_answer.selected_answers))
-    except Exception:
-        selected_ids = set()
-    selected_texts = [ans.text for ans in q.answers if ans.id in selected_ids]
-    correct_texts = [ans.text for ans in q.answers if ans.is_correct]
-
-    return q, selected_texts, correct_texts, attempt_answer, attempt_id
-
-
-def get_correct_incorrect_count(attempt_id):
-    if not attempt_id:
-        return 0, 0
-    attempt = Attempt.query.get(attempt_id)
-    if not attempt:
-        return 0, 0
-    correct_count = sum(
-        1 for aa in attempt.attempt_answers if aa.is_correct)
-    incorrect_count = len(attempt.attempt_answers) - correct_count
-    return correct_count, incorrect_count
-
-
 @main.route("/", methods=["GET"])
 def quiz():
-    # Ensure an attempt exists
-    attempt_id = session.get("attempt_id")
-    attempt = Attempt.query.get(attempt_id) if attempt_id else None
-    if not attempt:
-        question_ids = [q.id for q in Question.query.all()]
-        random.shuffle(question_ids)
-        attempt = Attempt(question_order=json.dumps(question_ids))
-        db.session.add(attempt)
-        db.session.commit()
-        session["attempt_id"] = attempt.id
+    # Get or create the attempt.
+    attempt = get_or_create_attempt()
 
-    correct_count, incorrect_count = get_correct_incorrect_count(attempt.id)
+    # Use the model methods for score and remaining questions.
+    correct_count, incorrect_count = attempt.calculate_scores()
+    remaining_qids = attempt.get_remaining_question_ids()
 
-    # Determine current question (first unanswered in the order)
-    question_order = json.loads(attempt.question_order)
-    answered_q_ids = {aa.question_id for aa in attempt.attempt_answers}
-    remaining_qids = [
-        qid for qid in question_order if qid not in answered_q_ids]
     if not remaining_qids:
-        attempt.end_time = datetime.datetime.utcnow()
-        db.session.commit()
+        update_attempt_end_time(attempt)
         return redirect(url_for("main.history"))
+
     current_question_id = remaining_qids[0]
     q = Question.query.get(current_question_id)
-    # Shuffle answers for display
+
+    # Shuffle answers for display.
     shuffled_answers = random.sample(q.answers, len(q.answers))
 
-    # Store the shuffled order in session to be used when processing the submission.
+    # Store the shuffled order and current question in session.
     session["current_shuffled_answer_ids"] = [a.id for a in shuffled_answers]
     session["current_question_id"] = q.id
 
-    # Check if question accepts more than one answer
+    # Check if question accepts more than one answer.
     multiple_answers = len([a for a in q.answers if a.is_correct]) > 1
 
-    # Render the question view (if not answered yet)
-    return render_template("quiz.html",
-                           question=q.text,
-                           answers=[a.text for a in shuffled_answers],
-                           answer_indices=range(len(shuffled_answers)),
-                           answered=False,
-                           image=q.image,
-                           correct_count=correct_count,
-                           incorrect_count=incorrect_count,
-                           multiple_answers=multiple_answers,
-                           correct_percentage=attempt.correct_percentage)
+    return render_template(
+        "quiz.html",
+        question=q.text,
+        answers=[a.text for a in shuffled_answers],
+        answer_indices=range(len(shuffled_answers)),
+        answered=False,
+        image=q.image,
+        correct_count=correct_count,
+        incorrect_count=incorrect_count,
+        multiple_answers=multiple_answers,
+        correct_percentage=attempt.correct_percentage
+    )
 
 
 @main.route("/submit_answer", methods=["POST"])
@@ -158,10 +105,12 @@ def submit_answer():
 
 @main.route("/answered/<int:qid>", methods=["GET"])
 def answered_view(qid):
-    q, selected_texts, correct_texts, attempt_answer, attempt_id = get_question_and_answers(
+    q, selected_texts, correct_texts, attempt_answer = get_question_and_answers(
         qid)
 
-    correct_count, incorrect_count = get_correct_incorrect_count(attempt_id)
+    attempt = get_or_create_attempt()
+
+    correct_count, incorrect_count = attempt.calculate_scores()
 
     # If no valid attempt or question, redirect to quiz
     if not q or not attempt_answer:
@@ -184,7 +133,7 @@ def answered_view(qid):
 @main.route("/explain/<int:qid>")
 def explain(qid):
     # Retrieve question and related data using your helper function.
-    q, selected_texts, correct_texts, attempt_answer, _ = get_question_and_answers(
+    q, selected_texts, correct_texts, attempt_answer = get_question_and_answers(
         qid)
 
     # If no valid attempt or question, redirect to quiz.
@@ -234,4 +183,14 @@ def history():
     current_attempt_id = session.get("attempt_id")
     current_attempt = Attempt.query.get(current_attempt_id
                                         ) if current_attempt_id else None
-    return render_template("history.html", attempts=attempts, current_attempt=current_attempt)
+
+    answered_questions = []
+    if current_attempt:
+        # Assuming each AttemptAnswer has a relationship to the Question via .question
+        answered_questions = current_attempt.attempt_answers
+    return render_template(
+        "history.html",
+        attempts=attempts,
+        current_attempt=current_attempt,
+        answered_questions=answered_questions
+    )

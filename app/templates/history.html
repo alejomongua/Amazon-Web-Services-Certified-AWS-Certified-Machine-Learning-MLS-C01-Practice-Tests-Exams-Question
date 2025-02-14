@@ -22,12 +22,28 @@
         {% endif %}
     </li>
 </ul>
+
+<h3>Answered Questions</h3>
+{% if answered_questions %}
+<ul>
+    {% for answer in answered_questions %}
+    <li>
+        <!-- Assuming answer.question is available and contains the Question -->
+        <a href="{{ url_for('main.answered_view', qid=answer.question_id) }}">
+            {{ answer.question.text }}
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>No questions answered yet.</p>
+{% endif %}
 {% endif %}
 
 <h2>Other Attempts</h2>
 <ul>
     {% for attempt in attempts %}
-    {% if attempt.id != current_attempt.id %}
+    {% if current_attempt and attempt.id != current_attempt.id or not current_attempt %}
     <li>
         Started: {{ attempt.start_time.strftime('%Y-%m-%d %H:%M:%S') }},
         {% if attempt.end_time %}

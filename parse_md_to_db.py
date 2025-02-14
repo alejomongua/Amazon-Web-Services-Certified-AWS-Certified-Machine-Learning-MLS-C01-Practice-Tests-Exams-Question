@@ -2,6 +2,8 @@ import re
 from app import create_app, db
 from app.models import Question, Answer
 
+from sqlalchemy.exc import OperationalError
+
 app = create_app()
 app.app_context().push()
 
@@ -66,11 +68,18 @@ def parse_markdown_file(file_path):
 def populate_db_from_md(md_file):
     questions_data = parse_markdown_file(md_file)
 
-    # Optionally, clear existing questions:
-    # from app.models import Answer, Question
-    # db.session.query(Answer).delete()
-    # db.session.query(Question).delete()
-    # db.session.commit()
+    # Check if the database exists
+    db_exists = True
+    try:
+        db.session.query(Question).first()
+    except OperationalError:
+        db_exists = False
+
+    if not db_exists:
+        with app.app_context():
+            from app import models  # noqa
+            db.create_all()
+            print(f"Database {db.engine.url} created.")
 
     for q in questions_data:
         # Check if question with that text already exists

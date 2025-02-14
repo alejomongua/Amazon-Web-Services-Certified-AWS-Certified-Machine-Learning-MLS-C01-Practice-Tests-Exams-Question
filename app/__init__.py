@@ -13,8 +13,7 @@ db = SQLAlchemy()
 def create_app():
     app = Flask(__name__, static_folder='../images')
     app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "default_secret")
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-        "DATABASE_URI", "sqlite:///quiz.db")
+    app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///db/quiz.db"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['DEBUG'] = os.environ.get("DEBUG", "False") == "True"
 
@@ -38,11 +37,6 @@ def create_app():
     werkzeug_logger.setLevel(logging.INFO)
 
     app.logger.info('Flask app startup')
-
-    # Initialize your database etc.
-    with app.app_context():
-        from app import models  # noqa
-        db.create_all()
 
     from app.routes import main as main_blueprint
     app.register_blueprint(main_blueprint)
