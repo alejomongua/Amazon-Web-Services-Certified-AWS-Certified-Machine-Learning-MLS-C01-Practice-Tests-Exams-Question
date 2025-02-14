@@ -12,7 +12,7 @@
 
     {% if image %}
     <div>
-        <img src="{{ image }}" alt="Question Image" style="max-width: 100%; height: auto;">
+        <img src="/{{ image }}" alt="Question Image" style="max-width: 100%; height: auto;">
     </div>
     {% endif %}
 
@@ -40,7 +40,13 @@
 <p class="{{ 'correct' if 'Correct' in message else 'incorrect' }}">{{ message }}</p>
 <a href="{{ url_for('main.next_question') }}" class="btn">Next question</a>
 <a href="{{ url_for('main.explain', qid=qid) }}" id="explain-btn" class="btn">Explain Question</a>
+{% endif %}
 
+<a href="{{ url_for('main.reset_quiz') }}" class="btn">Reset attempt</a>
+<a href="{{ url_for('main.history') }}" class="btn">View attempt history</a>
+{% endblock %}
+
+{% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const explainBtn = document.getElementById('explain-btn');
@@ -56,8 +62,4 @@
         }
     });
 </script>
-{% endif %}
-
-<a href="{{ url_for('main.reset_quiz') }}" class="btn">Reset attempt</a>
-<a href="{{ url_for('main.history') }}" class="btn">View attempt history</a>
 {% endblock %}

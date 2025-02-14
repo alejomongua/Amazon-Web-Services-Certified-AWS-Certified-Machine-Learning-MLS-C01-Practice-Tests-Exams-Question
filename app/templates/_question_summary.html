@@ -3,8 +3,7 @@
 
     {% if image %}
     <div>
-        <img src="{{ url_for('main.serve_image', filename=image) }}" alt="Question Image"
-            style="max-width:100%; height:auto;">
+        <img src="/{{ image }}" alt="Question Image" style="max-width: 100%; height: auto;">
     </div>
     {% endif %}
 

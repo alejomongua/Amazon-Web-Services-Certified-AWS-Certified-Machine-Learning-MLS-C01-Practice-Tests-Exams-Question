@@ -12,13 +12,12 @@
         Started: {{ current_attempt.start_time.strftime('%Y-%m-%d %H:%M:%S') }},
         {% if current_attempt.end_time %}
         Finished: {{ current_attempt.end_time.strftime('%Y-%m-%d %H:%M:%S') }},
-        {% if current_attempt.correct_percentage is not none %}
-        Score: {{ current_attempt.correct_percentage }}%
-        {% else %}
-        Score: 0 %
-        {% endif %}
         {% else %}
         <em>In Progress</em>
+        ({{ '%.0f' % current_attempt.remaining_percentage }} % left)
+        {% endif %}
+        {% if current_attempt.correct_percentage is not none %}
+        | Score so far: {{ '%.0f' % current_attempt.correct_percentage }}%
         {% endif %}
     </li>
 </ul>
@@ -49,10 +48,10 @@
         {% if attempt.end_time %}
         Finished: {{ attempt.end_time.strftime('%Y-%m-%d %H:%M:%S') }},
         {% else %}
-        Finished: <em>Unfinished</em>,
+        <em>Unfinished</em>,
         {% endif %}
         {% if attempt.correct_percentage is not none %}
-        Score: {{ attempt.correct_percentage }}%
+        Score: {{ "%.0f" % attempt.correct_percentage }}%
         {% else %}
         Score: 0 %
         {% endif %}

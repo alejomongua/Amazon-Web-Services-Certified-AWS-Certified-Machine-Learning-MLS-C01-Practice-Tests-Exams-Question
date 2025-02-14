@@ -15,7 +15,7 @@ def create_app():
     app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "default_secret")
     app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///db/quiz.db"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['DEBUG'] = os.environ.get("DEBUG", "False") == "True"
+    app.config['DEBUG'] = os.environ.get("FLASK_DEBUG", "False") == "True"
 
     db.init_app(app)
 

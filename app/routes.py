@@ -147,7 +147,7 @@ def explain(qid):
         distractors = [
             ans.text for ans in q.answers if ans.text not in correct_texts]
         explanation_markdown = generate_explanation(
-            q.text, correct_texts, distractors)
+            q.text, correct_texts, distractors, q.image)
 
         # Save the explanation in the question record to avoid future LLM calls.
         q.explanation = explanation_markdown
@@ -159,6 +159,7 @@ def explain(qid):
     return render_template(
         "explanation.html",
         explanation=explanation_html,
+        image=q.image,
         question=q.text,
         selected_answers=selected_texts,
         correct_answers=correct_texts,

@@ -59,6 +59,15 @@ class Attempt(db.Model):
         correct_count, _ = self.calculate_scores()
         return (correct_count / total) * 100
 
+    @property
+    def remaining_percentage(self):
+        """Return the percentage of remaining questions."""
+        total = len(self.questions)
+        if total == 0:
+            return 0
+        remaining_count = len(self.get_remaining_question_ids())
+        return (remaining_count / total) * 100
+
 
 class AttemptAnswer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
