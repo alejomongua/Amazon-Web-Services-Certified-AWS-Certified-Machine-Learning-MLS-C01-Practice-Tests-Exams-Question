@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Question Explanation{% endblock %}
+
+{% block content %}
+<h1>Question Explanation</h1>
+<!-- Include the summary of the answered question -->
+{% include "_question_summary.html" %}
+<div class="explanation">
+    {{ explanation }}
+</div>
+<a href="{{ url_for('main.quiz') }}" class="btn">Back to Quiz</a>
+{% endblock %}

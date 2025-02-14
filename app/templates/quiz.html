@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}AWS Practice Quiz{% endblock %}
+
+{% block content %}
+<h1>AWS MLS-C01 Practice Quiz</h1>
+<p>Score: Correct - {{ correct_count }}, Incorrect - {{ incorrect_count }}</p>
+
+{% if not answered %}
+<form method="post" action="/submit_answer">
+    <div class="question">{{ question }}</div>
+
+    {% if image %}
+    <div>
+        <img src="{{ image }}" alt="Question Image" style="max-width: 100%; height: auto;">
+    </div>
+    {% endif %}
+
+    <br>
+
+    {% for answer in answers %}
+    <div class="answer">
+        {% if multiple_answers %}
+        <input type="checkbox" id="answer_{{ loop.index0 }}" name="answer" value="{{ loop.index0 }}">
+        {% else %}
+        <input type="radio" id="answer_{{ loop.index0 }}" name="answer" value="{{ loop.index0 }}">
+        {% endif %}
+        <label for="answer_{{ loop.index0 }}">{{ answer }}</label>
+    </div>
+    {% endfor %}
+    <br>
+
+    <button type="submit" class="btn">Submit Answer</button>
+</form>
+{% else %}
+<!-- Include the summary view when answered -->
+<div id="content">
+    {% include "_question_summary.html" %}
+</div>
+<p class="{{ 'correct' if 'Correct' in message else 'incorrect' }}">{{ message }}</p>
+<a href="{{ url_for('main.next_question') }}" class="btn">Next question</a>
+<a href="{{ url_for('main.explain', qid=qid) }}" id="explain-btn" class="btn">Explain Question</a>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const explainBtn = document.getElementById('explain-btn');
+        if (explainBtn) {
+            explainBtn.addEventListener('click', function (e) {
+                // Disable the button visually by adding a class and preventing further clicks.
+                explainBtn.classList.add('disabled');
+                explainBtn.disabled = true;
+
+                // Change text in content div to "Querying..."
+                document.getElementById('content').innerHTML = 'Querying, please wait...';
+            });
+        }
+    });
+</script>
+{% endif %}
+
+<a href="{{ url_for('main.reset_quiz') }}" class="btn">Reset attempt</a>
+<a href="{{ url_for('main.history') }}" class="btn">View attempt history</a>
+{% endblock %}

@@ -1,1 +1,10 @@
 .DS_Store
+
+venv/
+__pycache__/
+
+logs/
+
+*.db
+
+.env

@@ -1,0 +1,23 @@
+<div class="question-summary">
+    <h2>{{ question }}</h2>
+
+    {% if image %}
+    <div>
+        <img src="{{ url_for('main.serve_image', filename=image) }}" alt="Question Image"
+            style="max-width:100%; height:auto;">
+    </div>
+    {% endif %}
+
+    <ul>
+        {% for answer in all_answers %}
+        <li
+            class="{{ 'correct' if answer.text in correct_answers else 'incorrect' if answer.text in selected_answers else '' }}">
+            {% if answer.text in selected_answers %}
+            <span class="selected">{{ answer.text }}</span>
+            {% else %}
+            {{ answer.text }}
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+</div>

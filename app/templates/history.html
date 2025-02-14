@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz History{% endblock %}
+
+{% block content %}
+<h1>Quiz History</h1>
+
+{% if current_attempt %}
+<h2>Current Attempt</h2>
+<ul>
+    <li>
+        Started: {{ current_attempt.start_time.strftime('%Y-%m-%d %H:%M:%S') }},
+        {% if current_attempt.end_time %}
+        Finished: {{ current_attempt.end_time.strftime('%Y-%m-%d %H:%M:%S') }},
+        {% if current_attempt.correct_percentage is not none %}
+        Score: {{ current_attempt.correct_percentage }}%
+        {% else %}
+        Score: 0 %
+        {% endif %}
+        {% else %}
+        <em>In Progress</em>
+        {% endif %}
+    </li>
+</ul>
+{% endif %}
+
+<h2>Other Attempts</h2>
+<ul>
+    {% for attempt in attempts %}
+    {% if attempt.id != current_attempt.id %}
+    <li>
+        Started: {{ attempt.start_time.strftime('%Y-%m-%d %H:%M:%S') }},
+        {% if attempt.end_time %}
+        Finished: {{ attempt.end_time.strftime('%Y-%m-%d %H:%M:%S') }},
+        {% else %}
+        Finished: <em>Unfinished</em>,
+        {% endif %}
+        {% if attempt.correct_percentage is not none %}
+        Score: {{ attempt.correct_percentage }}%
+        {% else %}
+        Score: 0 %
+        {% endif %}
+    </li>
+    {% endif %}
+    {% endfor %}
+</ul>
+
+<a href="{{ url_for('main.quiz') }}" class="btn">Back to Quiz</a>
+{% endblock %}
