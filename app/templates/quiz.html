@@ -42,7 +42,7 @@
 <a href="{{ url_for('main.explain', qid=qid) }}" id="explain-btn" class="btn">Explain Question</a>
 {% endif %}
 
-<a href="{{ url_for('main.reset_quiz') }}" class="btn">Reset attempt</a>
+<a href="{{ url_for('main.reset_quiz') }}" id="reset" class="btn">Reset current quiz</a>
 <a href="{{ url_for('main.history') }}" class="btn">View attempt history</a>
 {% endblock %}
 
@@ -50,6 +50,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const explainBtn = document.getElementById('explain-btn');
+        const resetBtn = document.getElementById('reset');
         if (explainBtn) {
             explainBtn.addEventListener('click', function (e) {
                 // Disable the button visually by adding a class and preventing further clicks.
@@ -60,6 +61,16 @@
                 document.getElementById('content').innerHTML = 'Querying LLM, please wait...';
             });
         }
+
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function (e) {
+                // Ask for confirmation before resetting the quiz
+                if (!confirm('Are you sure you want to start a new the quiz?')) {
+                    e.preventDefault();
+                }
+            });
+        }
+
     });
 </script>
 {% endblock %}
