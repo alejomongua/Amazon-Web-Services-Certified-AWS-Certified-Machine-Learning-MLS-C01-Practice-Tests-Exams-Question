@@ -472,9 +472,9 @@ We are so thankful for every contribution, which makes sure we can deliver top-n
 
 ![Question 25](images/question25.jpg)
 
-- [ ] Decision tree.
+- [x] Decision tree.
 - [ ] Linear support vector machine (SVM).
-- [x] Naive Bayesian classifier.
+- [ ] Naive Bayesian classifier.
 - [ ] Single Perceptron with sigmoidal activation function.
 
 **[⬆ Back to Top](#table-of-contents)**

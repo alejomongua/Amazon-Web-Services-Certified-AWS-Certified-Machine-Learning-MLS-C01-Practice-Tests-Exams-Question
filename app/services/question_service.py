@@ -36,15 +36,3 @@ def get_question_and_answers(qid):
     correct_texts = [ans.text for ans in q.answers if ans.is_correct]
 
     return q, selected_texts, correct_texts, attempt_answer
-
-
-def get_correct_incorrect_count(attempt_id):
-    if not attempt_id:
-        return 0, 0
-    attempt = Attempt.query.get(attempt_id)
-    if not attempt:
-        return 0, 0
-    correct_count = sum(
-        1 for aa in attempt.attempt_answers if aa.is_correct)
-    incorrect_count = len(attempt.attempt_answers) - correct_count
-    return correct_count, incorrect_count

@@ -28,6 +28,7 @@ def quiz():
 
     # Use the model methods for score and remaining questions.
     correct_count, incorrect_count = attempt.calculate_scores()
+    total_questions = len(attempt.questions)
     remaining_qids = attempt.get_remaining_question_ids()
 
     if not remaining_qids:
@@ -56,6 +57,7 @@ def quiz():
         image=q.image,
         correct_count=correct_count,
         incorrect_count=incorrect_count,
+        total_questions=total_questions,
         multiple_answers=multiple_answers,
         correct_percentage=attempt.correct_percentage
     )
@@ -111,6 +113,7 @@ def answered_view(qid):
     attempt = get_or_create_attempt()
 
     correct_count, incorrect_count = attempt.calculate_scores()
+    total_questions = len(attempt.questions)
 
     # If no valid attempt or question, redirect to quiz
     if not q or not attempt_answer:
@@ -126,6 +129,7 @@ def answered_view(qid):
         all_answers=q.answers,
         correct_count=correct_count,
         incorrect_count=incorrect_count,
+        total_questions=total_questions,
         image=q.image,
     )
 

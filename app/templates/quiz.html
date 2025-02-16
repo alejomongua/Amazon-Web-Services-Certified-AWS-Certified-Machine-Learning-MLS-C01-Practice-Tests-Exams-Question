@@ -4,7 +4,11 @@
 
 {% block content %}
 <h1>AWS MLS-C01 Practice Quiz</h1>
-<p>Score: Correct - {{ correct_count }}, Incorrect - {{ incorrect_count }}</p>
+<p>Score: Correct - {{ correct_count }}, Incorrect - {{ incorrect_count }} |
+    | Rate {{ "%.0f" % (100 * correct_count / (correct_count + incorrect_count)) }} %
+    | Answered {{ correct_count + incorrect_count
+    }}/{{ total_questions }} ({{ "%.0f" % (100 * (correct_count + incorrect_count) / total_questions) }} %)
+</p>
 
 {% if not answered %}
 <form method="post" action="/submit_answer">

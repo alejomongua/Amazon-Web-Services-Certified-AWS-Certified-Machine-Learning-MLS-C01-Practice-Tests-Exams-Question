@@ -82,6 +82,9 @@ def populate_db_from_md(md_file):
             print(f"Database {db.engine.url} created.")
 
     for q in questions_data:
+        if q["question"] == "PLACEHOLDER":
+            continue
+
         # Check if question with that text already exists
         question = Question.query.filter_by(text=q["question"]).first()
         if question:
