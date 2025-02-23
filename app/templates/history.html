@@ -60,5 +60,6 @@
     {% endfor %}
 </ul>
 
+<a href="{{ url_for('main.reset_quiz') }}" id="reset" class="btn">Reset quiz</a>
 <a href="{{ url_for('main.quiz') }}" class="btn">Back to Quiz</a>
 {% endblock %}
